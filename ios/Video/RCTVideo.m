@@ -1288,7 +1288,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)videoPlayerViewControllerDidDismiss:(AVPlayerViewController *)playerViewController
 {
-  if (_playerViewController == playerViewController && _fullscreenPlayerPresented)
+  if (_playerViewController == playerViewController)
   {
     _fullscreenPlayerPresented = false;
     _presentingViewController = nil;
