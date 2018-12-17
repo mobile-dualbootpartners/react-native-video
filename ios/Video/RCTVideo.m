@@ -121,6 +121,16 @@ static int const RCTVideoUnset = -1;
                                              selector:@selector(audioRouteChanged:)
                                                  name:AVAudioSessionRouteChangeNotification
                                                object:nil];
+      
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(goToFullscreenMode)
+                                                 name:@"goToFullscreenMode"
+                                               object:nil];
+      
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(exitFromFullscreenMode)
+                                                 name:@"exitFromFullscreenMode"
+                                               object:nil];
   }
   
   return self;
@@ -137,6 +147,18 @@ static int const RCTVideoUnset = -1;
     viewController.player = player;
     viewController.view.frame = self.bounds;
     return viewController;
+}
+
+-(void)goToFullscreenMode {
+    if (self.onVideoFullscreenPlayerDidPresent) {
+        self.onVideoFullscreenPlayerDidPresent(@{@"target": self.reactTag});
+    }
+}
+
+-(void)exitFromFullscreenMode {
+    if (self.onVideoFullscreenPlayerDidDismiss) {
+        self.onVideoFullscreenPlayerDidDismiss(@{@"target": self.reactTag});
+    }
 }
 
 /* ---------------------------------------------------------

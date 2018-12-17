@@ -2,6 +2,8 @@
 
 @interface RCTVideoPlayerViewController ()
 
+@property (assign, nonatomic) BOOL isFullscreenMode;
+
 @end
 
 @implementation RCTVideoPlayerViewController
@@ -14,11 +16,39 @@
   return NO;
 }
 
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.isFullscreenMode = false;
+}
+
 - (void)viewDidDisappear:(BOOL)animated
 {
   [super viewDidDisappear:animated];
   [_rctDelegate videoPlayerViewControllerWillDismiss:self];
   [_rctDelegate videoPlayerViewControllerDidDismiss:self];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    
+    if ([self contentOverlayView]) {
+        BOOL isFullscreenMode = self.contentOverlayView.frame.size.height == UIScreen.mainScreen.bounds.size.height;
+        
+        if (isFullscreenMode) {
+            if (!self.isFullscreenMode) {
+                [NSNotificationCenter.defaultCenter postNotificationName:@"goToFullscreenMode" object:nil];
+            }
+            
+            self.isFullscreenMode = true;
+        }
+        
+        if (self.isFullscreenMode && !isFullscreenMode) {
+            self.isFullscreenMode = false;
+            
+            [NSNotificationCenter.defaultCenter postNotificationName:@"exitFromFullscreenMode" object:nil];
+        }
+    }
 }
 
 - (BOOL)prefersStatusBarHidden {
