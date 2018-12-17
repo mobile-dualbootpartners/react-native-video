@@ -51,10 +51,6 @@
     }
 }
 
-- (BOOL)prefersStatusBarHidden {
-    return YES;
-}
-
 #if !TARGET_OS_TV
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
   return UIInterfaceOrientationMaskAll;
