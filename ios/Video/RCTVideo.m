@@ -150,7 +150,7 @@ static int const RCTVideoUnset = -1;
 }
 
 -(void)goToFullscreenMode:(NSNotification*)notification {
-    if ([[notification userInfo] valueForKey:@"object"] != self.playerVC) {
+    if ([[notification userInfo] valueForKey:@"object"] != _playerViewController) {
         return;
     }
     
@@ -160,7 +160,7 @@ static int const RCTVideoUnset = -1;
 }
 
 -(void)exitFromFullscreenMode:(NSNotification*)notification {
-    if ([[notification userInfo] valueForKey:@"object"] != self.playerVC) {
+    if ([[notification userInfo] valueForKey:@"object"] != _playerViewController) {
         return;
     }
     
