@@ -237,11 +237,17 @@ static int const RCTVideoUnset = -1;
   [_player setRate:0.0];
 }
 
+
 - (void)applicationDidEnterBackground:(NSNotification *)notification
 {
   if (_playInBackground) {
     // Needed to play sound in background. See https://developer.apple.com/library/ios/qa/qa1668/_index.html
-    [_playerLayer setPlayer:nil];
+    NSArray<AVPlayerItemTrack *> *tracks = [[_player currentItem] tracks];
+    for (AVPlayerItemTrack *playerItemTrack in tracks) {
+      if ([playerItemTrack.assetTrack hasMediaCharacteristic:AVMediaCharacteristicVisual]) {
+        [playerItemTrack setEnabled:NO];
+      }
+    }
   }
 }
 
@@ -249,7 +255,12 @@ static int const RCTVideoUnset = -1;
 {
   [self applyModifiers];
   if (_playInBackground) {
-    [_playerLayer setPlayer:_player];
+    NSArray<AVPlayerItemTrack *> *tracks = [[_player currentItem] tracks];
+    for (AVPlayerItemTrack *playerItemTrack in tracks) {
+      if ([playerItemTrack.assetTrack hasMediaCharacteristic:AVMediaCharacteristicVisual]) {
+        [playerItemTrack setEnabled:YES];
+      }
+    }
   }
 }
 
