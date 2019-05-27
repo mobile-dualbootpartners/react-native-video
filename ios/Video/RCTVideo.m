@@ -74,6 +74,8 @@ static int const RCTVideoUnset = -1;
 #if __has_include(<react-native-video/RCTVideoCache.h>)
     RCTVideoCache * _videoCache;
 #endif
+    
+    CGRect _playerLayerFrame;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -102,6 +104,8 @@ static int const RCTVideoUnset = -1;
 #if __has_include(<react-native-video/RCTVideoCache.h>)
         _videoCache = [RCTVideoCache sharedInstance];
 #endif
+        _playerLayerFrame = CGRectNull;
+        
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationWillResignActive:)
                                                      name:UIApplicationWillResignActiveNotification
@@ -247,34 +251,49 @@ static int const RCTVideoUnset = -1;
 {
     if (_playInBackground) {
         // Needed to play sound in background. See https://developer.apple.com/library/ios/qa/qa1668/_index.html
-        NSArray<AVPlayerItemTrack *> *tracks = [[_player currentItem] tracks];
-        for (AVPlayerItemTrack *playerItemTrack in tracks) {
-            if ([playerItemTrack.assetTrack hasMediaCharacteristic:AVMediaCharacteristicVisual]) {
-                [playerItemTrack setEnabled:NO];
-            }
-        }
+        [self setIsVideoStreamEnabled:NO];
     }
     
+    _playerLayerFrame = _playerLayer.frame;
     _playerLayer.player = nil;
 }
 
 - (void)applicationWillEnterForeground:(NSNotification *)notification
 {
+    [self setIsVideoStreamEnabled:YES];
+    
+    __weak RCTVideo* weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [weakSelf setIsVideoStreamEnabled:YES];
+    });
+    
+    BOOL isPlaying = _player.rate != 0 && _player.error == nil;
+    
     [self applyModifiers];
-    if (_playInBackground) {
+    
+    if (isPlaying) {
+        [_player play];
+    } else {
+        [_player pause];
     }
     
-    NSArray<AVPlayerItemTrack *> *tracks = [[_player currentItem] tracks];
-    for (AVPlayerItemTrack *playerItemTrack in tracks) {
-        if ([playerItemTrack.assetTrack hasMediaCharacteristic:AVMediaCharacteristicVisual]) {
-            [playerItemTrack setEnabled:YES];
-        }
-    }
+    _playerLayer.frame = _playerLayerFrame;
+    _playerLayer.player = _player;
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
+    _playerLayer.frame = _playerLayerFrame;
     _playerLayer.player = _player;
+}
+
+- (void)setIsVideoStreamEnabled:(BOOL)isEnabled {
+    NSArray<AVPlayerItemTrack *> *tracks = [[_player currentItem] tracks];
+    for (AVPlayerItemTrack *playerItemTrack in tracks) {
+        if ([playerItemTrack.assetTrack hasMediaCharacteristic:AVMediaCharacteristicVisual]) {
+            [playerItemTrack setEnabled:isEnabled];
+        }
+    }
 }
 
 #pragma mark - Audio events
